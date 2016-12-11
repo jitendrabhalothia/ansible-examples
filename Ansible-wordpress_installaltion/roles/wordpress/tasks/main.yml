@@ -1,0 +1,5 @@
+---
+- name: Prepare Install folder
+  action: shell sudo mkdir -p /tmp/my_install/mysql/ && cd /tmp/my_install/mysql/
+- name:
+  action: shell cd /tmp/my_install/mysql/ && wget https://wordpress.org/latest.tar.gz && tar -xvzf  *.gz 

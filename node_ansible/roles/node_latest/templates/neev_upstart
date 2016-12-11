@@ -1,0 +1,14 @@
+cription "NodeJS Server"
+author "admin"
+
+#env PORT=1337
+env NODE_ENV=production
+
+start on runlevel [2345]
+stop on runlevel [016]
+respawn
+
+setuid root
+chdir /opt/
+exec node app.js
+

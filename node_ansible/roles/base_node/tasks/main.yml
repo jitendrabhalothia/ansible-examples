@@ -1,0 +1,24 @@
+---
+ - name: Install Debian packages
+   apt: pkg={{item}} state=present update_cache=yes
+   with_items:
+     - make
+     - g++
+     - git
+     - imagemagick
+
+ - name: Base NodeJS
+   copy: src=node_setup_0.12 dest=/tmp
+ - name: test
+   command: sh /tmp/node_setup_0.12
+ - name: Install NodeJS
+   apt: pkg=nodejs state=present
+ - name: install npm and sails
+   npm: name={{item}} global=yes state=present
+   with_items:
+     - npm
+     - sails
+ - name: Add ffmpeg repositories
+   apt_repository: repo='ppa:kirillshkrogalev/ffmpeg-next' state=present
+ - name: install ffmpeg
+   apt: pkg=ffmpeg state=present update_cache=yes

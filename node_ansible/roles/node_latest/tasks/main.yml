@@ -1,0 +1,33 @@
+---
+ - name: Install Debian packages
+   apt: pkg={{item}} state=present update_cache=yes
+   with_items:
+     - make
+     - g++
+     - git
+     - imagemagick
+     - curl
+
+ - name: add apt key for nodesource
+   shell : curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+
+ - name: Install NodeJS
+   apt: pkg=nodejs state=latest update_cache=yes
+
+
+ - name: install npm and sails
+   npm: name={{item}} global=yes state=latest 
+   with_items:
+     - npm
+     - sails
+
+ - name: Add ffmpeg repositories
+   apt_repository: repo='ppa:kirillshkrogalev/ffmpeg-next' state=present
+
+ - name: install ffmpeg
+   apt: pkg=ffmpeg state=present update_cache=yes
+
+ - name: Copy upstart script
+   template: src=neev_upstart dest=/etc/init/neev
+   #notify: restart nginx
+   when: ansible_distribution == 'Ubuntu'

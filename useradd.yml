@@ -1,0 +1,37 @@
+---
+ - hosts: demo.ecs.designet.com
+   user: ec2-user
+   sudo: yes
+   tasks:
+    - name: create a user
+      user: name={{ item }} state=present
+      with_items:
+        - arun.raveendra
+        - hassan.ashraf
+        - jim.idelson
+        - ganesh
+        - dima.skripkin
+    - name: copy ssh pub key
+      authorized_key: user={{ item }} key={{ lookup('file', '/home/{{ item }}/.ssh/authorized_keys') }}
+      with_items:
+        - arun.raveendra
+        - hassan.ashraf
+        - jim.idelson
+        - ganesh
+        - dima.skripkin
+   
+    - name: Create sudoers and sshd file backup
+      command: cp -f /etc/sudoers /root/sudoers.bak
+      command: cp -f /etc/ssh/sshd_config /root/sshd_config_20160607
+    - name: Add user to sudoers
+      copy: src=sudo-users dest=/etc/sudoers.d/sudo-users validate='visudo -cf %s'
+    - lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^AllowUsers'
+        line: "AllowUsers  arun.raveendra ec2-user hassan.ashraf jim.idelson app-user1 ganesh misha.khokhlov dima.skripkin dre"
+        backup: yes
+   handlers:
+    - name: restart sshd
+      service: name=sshd state=restarted
+    - name: reload sshd
+      command: service sshd reload

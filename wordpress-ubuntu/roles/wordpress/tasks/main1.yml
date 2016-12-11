@@ -1,0 +1,28 @@
+---
+- name: Download WordPress
+  get_url: url=http://wordpress.org/latest.tar.gz dest=/tmp/wordpress.tar.gz validate_certs=no
+
+- name: Extract archive
+  command: chdir=/tmp/ /bin/tar xvf wordpress.tar.gz creates={{ server_docroot }}
+
+- name: Create WordPress database
+  mysql_db: name={{ wp_db_name }} state=present
+
+- name: Create WordPress database user
+  mysql_user: name={{ wp_db_user }} password={{ wp_db_password }} priv={{ wp_db_name }}.*:ALL host='localhost' state=present
+
+#- name: Copy WordPress config file
+#  template: src=wp-config.php dest=/opt/{{ server_root}}/
+- name: Update WordPress config file
+  lineinfile:
+    dest={{ server_docroot }}/wp-config.php
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - {'regexp': "define\\('DB_NAME', '(.)+'\\);", 'line': "define('DB_NAME', '{{wp_db_name}}');"}
+    - {'regexp': "define\\('DB_USER', '(.)+'\\);", 'line': "define('DB_USER', '{{wp_db_user}}');"}
+    - {'regexp': "define\\('DB_PASSWORD', '(.)+'\\);", 'line': "define('DB_PASSWORD', '{{wp_db_password}}');"}
+
+
+- name: Start php5-fpm Service
+  service: name=php5-fpm state=started enabled=yes

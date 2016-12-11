@@ -1,0 +1,80 @@
+upstream node_{{ node_name }} {
+  server localhost:{{ node_port }};
+}
+
+server {
+  listen 80;
+  
+  server_name {{ server_hostname }};
+
+  index index.html index.htm app/index.html;
+  root /opt/{{ server_root }};
+
+
+## logging options ##
+#-------------------
+  access_log /var/log/nginx/{{ server_hostname }}.access.log combined;
+  error_log /var/log/nginx/{{ server_hostname }}.error.log;
+
+
+## Redirect to /app for the requests on / ##
+#---------------------------------------------
+  location = / { 
+    rewrite ^(.*) http://{{ server_hostname }}/app/ break;
+  }
+
+# Pass the PHP scripts to FastCGI server listening on the php-fpm socket
+#----------------------------------------------------------------------
+        location ~ /\.php$ {
+                try_files \$uri =404;
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+                fastcgi_index index.php;
+                fastcgi_param SCRIPT_FILENAME /$document_root$fastcgi_script_name;
+                include fastcgi_params;
+                
+        }
+
+# Pass Sails api calls
+#---------------------------------------------------------------
+  location /api {
+    alias /opt/{{ server_root }}/sails-ayny/;
+    try_files \$uri \$uri/ @node_{{ node_name }};
+  }
+
+  location @node_$domain {
+    rewrite /api(.*) \$1 break;
+
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header Host \$proxy_host;
+    proxy_set_header X-NginX-Proxy true;
+
+    proxy_pass http://node_{{ node_name }};
+    proxy_redirect http://node_{{ node_name }}/ /api/;
+
+  }
+
+# Pass the odoo partner api 
+#------------------------------------------------------------
+ location /odooapi {
+        uwsgi_pass unix:///tmp/uwsgi.sock;
+        include uwsgi_params;
+        uwsgi_param SCRIPT_NAME /odooapi;
+        uwsgi_modifier1 30;
+    }
+
+## Deny all requests for git files ##
+#-------------------------------------
+        location ~ /(\.git).* {
+                deny  all;
+        }
+
+## Browser Cache
+# -----------------------
+         location ~* \.(js|css|html|png)$ {
+         add_header    Cache-Control "public";
+         expires           1M;
+         access_log        off;
+         add_header Cache-Control "public";
+   }
+}

@@ -1,0 +1,10 @@
+---
+- name: Install php-fpm and deps 
+  apt: pkg={{item}} state=present
+  with_items:
+    - php5-fpm
+    - php5-mysql
+    - php5-mysql
+    - php5-curl
+    - libssh2-php
+    - python-mysqldb

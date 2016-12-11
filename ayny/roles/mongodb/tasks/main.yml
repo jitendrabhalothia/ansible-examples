@@ -1,0 +1,29 @@
+---
+ - name: Add MongodDB key on Ubuntu
+   command: "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10"
+   when: ansible_distribution == 'Ubuntu'
+
+ - name: Add MongoDB-3.2 repository on Ubuntu
+   template: src=mongodb.list dest=/etc/apt/sources.list.d/mongodb-org-3.2.list
+   when: ansible_distribution == 'Ubuntu'
+
+ - name: Install MongoDB-3.2 packages on Ubuntu
+   apt: pkg=mongodb-org state=present update_cache=yes
+   when: ansible_distribution == 'Ubuntu'
+
+ - name: Add MongoDB-3.2 repository on Amazon Linux
+   template: src=mongodb.repo dest=/etc/yum.repos.d/mongodb-org-3.2.repo
+   when: ansible_distribution == 'Amazon'
+
+ - name: Install MongoDB-3.2 on Amazon Linux
+   yum: name=mongodb-org state=present
+   when: ansible_distribution == 'Amazon'
+
+# - name: Copy mongod conf file
+ #  templete: src=mongod.conf dest=/etc/mongod.conf
+   #notify:
+   #- restart mongod
+ - name: restart mongodb
+   service: name=mongod state=restarted
+ - name: Ensure mongodb is started and enabled to start at boot.
+   service: name=mongod state=started enabled=yes

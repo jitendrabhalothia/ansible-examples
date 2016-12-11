@@ -1,0 +1,4 @@
+[Node]
+54.169.148.106
+[Node:vars]
+ansible_ssh_private_key_file=/home/ubuntu/key/dc-sg-prod.pem

@@ -1,0 +1,11 @@
+---
+- name: Install Node|nginx|php-fpm|mongodb
+  hosts:  Node
+  remote_user: ubuntu
+  sudo: yes
+
+  roles:
+     - nginx
+     - mongodb
+   # - base_node  
+     - node_latest  

@@ -1,0 +1,11 @@
+---
+- name: Install WP|Nginx|php-fpm|MySQL 
+  hosts: vm
+  remote_user: ubuntu
+  sudo: yes
+
+  roles:
+    - nginx 
+    - mysql
+    - wordpress
+    - php-fpm
